@@ -42,7 +42,6 @@ const getClass = (props: ButtonProps) => {
 };
 
 export interface ButtonProps {
-	forwardedRef?: React.ForwardedRef<HTMLButtonElement | HTMLAnchorElement>;
 	// target - button
 	type?: "submit" | "button" | "reset";
 	disabled?: boolean;
@@ -72,6 +71,21 @@ export interface ButtonProps {
 	reverse?: boolean;
 	iconLabel?: string;
 	busy?: boolean;
+}
+
+export interface ButtonComponent extends React.ForwardRefExoticComponent<ButtonProps & React.RefAttributes<HTMLButtonElement | HTMLAnchorElement>> {
+	sizes: {
+		large: ButtonSize,
+		largeIcon: ButtonSize,
+		medium: ButtonSize,
+		mediumIcon: ButtonSize,
+		small: ButtonSize,
+		smallIcon: ButtonSize,
+	};
+	styles: {
+		outset: ButtonStyle,
+		flat: ButtonStyle,
+	};
 }
 
 const getProgressColor = (props: ButtonProps): ProgressCircleColor => {
@@ -129,11 +143,14 @@ const validateButton = (props: ButtonProps): void => {
 	}
 };
 
-export const Button = (props: ButtonProps): JSX.Element => {
+export const Button = forwardRef<
+	HTMLButtonElement | HTMLAnchorElement,
+	ButtonProps
+	>((props: ButtonProps, ref) => {
 	validateButton(props);
 	const common = {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		ref: props.forwardedRef as any,
+		ref: ref as any,
 		className: getClass(props),
 		children: <ButtonChildren {...props} />,
 		"aria-label": props.iconLabel,
@@ -157,7 +174,7 @@ export const Button = (props: ButtonProps): JSX.Element => {
 			tabIndex={props.dangerouslySetTabIndex}
 		/>
 	);
-};
+}) as ButtonComponent;
 
 Button.styles = {
 	outset: {
@@ -200,8 +217,3 @@ const isIconSize = (s?: ButtonSize): boolean =>
 	s === Button.sizes.largeIcon ||
 	s === Button.sizes.mediumIcon ||
 	s === Button.sizes.smallIcon;
-
-Button.Forwarded = forwardRef<
-	HTMLButtonElement | HTMLAnchorElement,
-	ButtonProps
->((props, ref) => <Button forwardedRef={ref} {...props} />);
